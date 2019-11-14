@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset='utf-8' />
+    <title>Create a heatmap layer</title>
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v1.5.0/mapbox-gl.js'></script>
+    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v1.5.0/mapbox-gl.css' rel='stylesheet' />
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        #map {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <style>
+        #menu {
+            background: #fff;
+            position: absolute;
+            z-index: 1;
+            top: 10px;
+            right: 10px;
+            border-radius: 3px;
+            width: 120px;
+            border: 1px solid rgba(0, 0, 0, 0.4);
+            font-family: 'Open Sans', sans-serif;
+        }
+
+        #menu a {
+            font-size: 13px;
+            color: #404040;
+            display: block;
+            margin: 0;
+            padding: 0;
+            padding: 10px;
+            text-decoration: none;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.25);
+            text-align: center;
+        }
+
+        #menu a:last-child {
+            border: none;
+        }
+
+        #menu a:hover {
+            background-color: #f8f8f8;
+            color: #404040;
+        }
+
+        #menu a.active {
+            background-color: #3887be;
+            color: #ffffff;
+        }
+
+        #menu a.active:hover {
+            background: #3074a4;
+        }
+    </style>
+
+    <nav id="menu"></nav>
+    <div id='map'></div>
+
+    <script>
+        mapboxgl.accessToken = 'pk.eyJ1Ijoid2lsbGlhbTgwMDAiLCJhIjoiY2swZDkyY2piMDVqaDNucDhiZmVkbTFlYSJ9.FdzzlIgrE9dLA3UWQhwG0A';
+
+        var map = new mapboxgl.Map({
+            container: 'map',
+            style: 'mapbox://styles/mapbox/streets-v11',
+            center: [-55, -15],
+            zoom: 4,
+            maxZoom: 12
+        });
+
+        map.on('load', function () {
+
+            map.addSource('rank-0', {
+                type: 'geojson',
+                data: 'https://dl.dropbox.com/s/x5lsb8h4vfdsqfz/dados_0.geojson?dl=0',
+                buffer: 0,
+                maxzoom: 12
+            });
+            map.addSource('rank-1', {
+                type: 'geojson',
+                data: 'https://dl.dropbox.com/s/v4jcc8f3451m5p5/dados_1.geojson?dl=0',
+                buffer: 0,
+                maxzoom: 12
+            });
+            map.addSource('rank-2', {
+                type: 'geojson',
+                data: 'https://dl.dropbox.com/s/dx3rqlimsge9g8p/dados_2.geojson?dl=0',
+                buffer: 0,
+                maxzoom: 12
+            });
+            map.addSource('rank-3', {
+                type: 'geojson',
+                data: 'https://dl.dropbox.com/s/i85w9aiw2er9607/dados_3.geojson?dl=0',
+                buffer: 0,
+                maxzoom: 12
+            });
+            map.addSource('rank-4', {
+                type: 'geojson',
+                data: 'https://dl.dropbox.com/s/bymfpycdsoxdnns/dados_4.geojson?dl=0',
+                buffer: 0,
+                maxzoom: 12
+            });
+            map.addSource('rank-5', {
+                type: 'geojson',
+                data: 'https://dl.dropbox.com/s/o2xicokcl87a83l/dados_5.geojson?dl=0',
+                buffer: 0,
+                maxzoom: 12
+            });
+
+            // heatmap-rank-0
+            map.addLayer({
+                "id": "heatmap-rank-0",
+                "type": "heatmap",
+                "source": "rank-0",
+                "layout": {
+                    "visibility": "none"
+                },
+                "maxzoom": 15,                
+                "paint": {
+                    'heatmap-weight': {
+                        type: 'exponential',
+                        stops: [
+                            [1, 0],
+                            [62, 1]
+                        ]
+                    }, 'heatmap-intensity': {
+                        stops: [
+                            [11, 1],
+                            [15, 3]
+                        ]
+                    },
+                    "heatmap-color": [
+                        "interpolate",
+                        ["linear"],
+                        ["heatmap-density"],
+                        0, "rgba(0, 0, 255, 0)",
+                        0.1, "royalblue",
+                        0.3, "cyan",
+                        0.5, "lime",
+                        0.7, "yellow", 1, "red"
+                    ],
+                    "heatmap-radius": {
+                        stops: [
+                            [11, 15],
+                            [15, 20]
+                        ]
+                    },
+                    "heatmap-opacity": {
+                        default: 1,
+                        stops: [
+                            [14, 1],
+                            [15, 0]
+                        ]
+                    },
+                }
+            });
+            // point-rank-0
+
+            map.addLayer({
+                "id": "point-rank-0",
+                "type": "circle",
+                "source": "rank-0",
+                "minzoom": 7,
+                "layout": {
+                    "visibility": "none"
+                },
+                "paint": {
+                    "circle-radius": [
+                        "interpolate",
+                        ["linear"],
+                        ["zoom"],
+                        7, [
+                            "interpolate",
+                            ["linear"],
+                            ["get", "mag"],
+                            1, 1,
+                            6, 4
+                        ],
+                        16, [
+                            "interpolate",
+                            ["linear"],
+                            ["get", "mag"],
+                            1, 5,
+                            6, 50
+                        ]
+                    ],
+                    "circle-color": [
+                        "interpolate",
+                        ["linear"],
+                        ["get", "mag"],
+                        1, "rgba(33,102,172,0)",
+                        2, "rgb(103,169,207)",
+                        3, "rgb(209,229,240)",
+                        4, "rgb(253,219,199)",
+                        5, "rgb(239,138,98)",
+                        6, "rgb(178,24,43)"
+                    ],
+                    "circle-stroke-color": "white",
+                    "circle-stroke-width": 1,
+                    "circle-opacity": [
+                        "interpolate",
+                        ["linear"],
+                        ["zoom"],
+                        7, 0,
+                        8, 1
+                    ]
+                }
+            });
+            // heatmap-rank-1
+            map.addLayer({
+                "id": "heatmap-rank-1",
+                "type": "heatmap",
+                "source": "rank-1",
+                "maxzoom": 15,
+                "layout": {
+                    "visibility": "none"
+                },
+                "paint": {
+                    'heatmap-weight': {
+                        type: 'exponential',
+                        stops: [
+                            [1, 0],
+                            [62, 1]
+                        ]
+                    }, 'heatmap-intensity': {
+                        stops: [
+                            [11, 1],
+                            [15, 3]
+                        ]
+                    },
+                    "heatmap-color": [
+                        "interpolate",
+                        ["linear"],
+                        ["heatmap-density"],
+                        0, "rgba(0, 0, 255, 0)",
+                        0.1, "royalblue",
+                        0.3, "cyan",
+                        0.5, "lime",
+                        0.7, "yellow", 1, "red"
+                    ],
+                    "heatmap-radius": {
+                        stops: [
+                            [11, 15],
+                            [15, 20]
+                        ]
+                    },
+                    "heatmap-opacity": {
+                        default: 1,
+                        stops: [
+                            [14, 1],
+                            [15, 0]
+                        ]
+                    },
+                }
+            });
+            // point-rank-1
+            map.addLayer({
+                "id": "point-rank-1",
+                "type": "circle",
+                "source": "rank-1",
+                "minzoom": 7,
+                "layout": {
+                    "visibility": "none"
+                },
+                "paint": {
+                    "circle-radius": [
+                        "interpolate",
+                        ["linear"],
+                        ["zoom"],
+                        7, [
+                            "interpolate",
+                            ["linear"],
+                            ["get", "mag"],
+                            1, 1,
+                            6, 4
+                        ],
+                        16, [
+                            "interpolate",
+                            ["linear"],
+                            ["get", "mag"],
+                            1, 5,
+                            6, 50
+                        ]
+                    ],
+                    "circle-color": [
+                        "interpolate",
+                        ["linear"],
+                        ["get", "mag"],
+                        1, "rgba(33,102,172,0)",
+                        2, "rgb(103,169,207)",
+                        3, "rgb(209,229,240)",
+                        4, "rgb(253,219,199)",
+                        5, "rgb(239,138,98)",
+                        6, "rgb(178,24,43)"
+                    ],
+                    "circle-stroke-color": "white",
+                    "circle-stroke-width": 1,
+                    "circle-opacity": [
+                        "interpolate",
+                        ["linear"],
+                        ["zoom"],
+                        7, 0,
+                        8, 1
+                    ]
+                }
+            });
+
+            // heatmap-rank-2
+            map.addLayer({
+                "id": "heatmap-rank-2",
+                "type": "heatmap",
+                "source": "rank-2",
+                "maxzoom": 15,
+                "layout": {
+                    "visibility": "none"
+                },
+                "paint": {
+                    'heatmap-weight': {
+                        type: 'exponential',
+                        stops: [
+                            [1, 0],
+                            [62, 1]
+                        ]
+                    }, 'heatmap-intensity': {
+                        stops: [
+                            [11, 1],
+                            [15, 3]
+                        ]
+                    },
+                    "heatmap-color": [
+                        "interpolate",
+                        ["linear"],
+                        ["heatmap-density"],
+                        0, "rgba(0, 0, 255, 0)",
+                        0.1, "royalblue",
+                        0.3, "cyan",
+                        0.5, "lime",
+                        0.7, "yellow", 1, "red"
+                    ],
+                    "heatmap-radius": {
+                        stops: [
+                            [11, 15],
+                            [15, 20]
+                        ]
+                    },
+                    "heatmap-opacity": {
+                        default: 1,
+                        stops: [
+                            [14, 1],
+                            [15, 0]
+                        ]
+                    },
+                }
+            });
+            // point-rank-2
+            map.addLayer({
+                "id": "point-rank-2",
+                "type": "circle",
+                "source": "rank-2",
+                "minzoom": 7,
+                "layout": {
+                    "visibility": "none"
+                },
+                "paint": {
+                    "circle-radius": [
+                        "interpolate",
+                        ["linear"],
+                        ["zoom"],
+                        7, [
+                            "interpolate",
+                            ["linear"],
+                            ["get", "mag"],
+                            1, 1,
+                            6, 4
+                        ],
+                        16, [
+                            "interpolate",
+                            ["linear"],
+                            ["get", "mag"],
+                            1, 5,
+                            6, 50
+                        ]
+                    ],
+                    "circle-color": [
+                        "interpolate",
+                        ["linear"],
+                        ["get", "mag"],
+                        1, "rgba(33,102,172,0)",
+                        2, "rgb(103,169,207)",
+                        3, "rgb(209,229,240)",
+                        4, "rgb(253,219,199)",
+                        5, "rgb(239,138,98)",
+                        6, "rgb(178,24,43)"
+                    ],
+                    "circle-stroke-color": "white",
+                    "circle-stroke-width": 1,
+                    "circle-opacity": [
+                        "interpolate",
+                        ["linear"],
+                        ["zoom"],
+                        7, 0,
+                        8, 1
+                    ]
+                }
+            });
+
+            // heatmap-rank-3
+            map.addLayer({
+                "id": "heatmap-rank-3",
+                "type": "heatmap",
+                "source": "rank-3",
+                "maxzoom": 15,
+                "layout": {
+                    "visibility": "none"
+                },
+                "paint": {
+                    'heatmap-weight': {
+                        type: 'exponential',
+                        stops: [
+                            [1, 0],
+                            [62, 1]
+                        ]
+                    }, 'heatmap-intensity': {
+                        stops: [
+                            [11, 1],
+                            [15, 3]
+                        ]
+                    },
+                    "heatmap-color": [
+                        "interpolate",
+                        ["linear"],
+                        ["heatmap-density"],
+                        0, "rgba(0, 0, 255, 0)",
+                        0.1, "royalblue",
+                        0.3, "cyan",
+                        0.5, "lime",
+                        0.7, "yellow", 1, "red"
+                    ],
+                    "heatmap-radius": {
+                        stops: [
+                            [11, 15],
+                            [15, 20]
+                        ]
+                    },
+                    "heatmap-opacity": {
+                        default: 1,
+                        stops: [
+                            [14, 1],
+                            [15, 0]
+                        ]
+                    },
+                }
+            });
+            // point-rank-3
+            map.addLayer({
+                "id": "point-rank-3",
+                "type": "circle",
+                "source": "rank-3",
+                "minzoom": 7,
+                "layout": {
+                    "visibility": "none"
+                },
+                "paint": {
+                    "circle-radius": [
+                        "interpolate",
+                        ["linear"],
+                        ["zoom"],
+                        7, [
+                            "interpolate",
+                            ["linear"],
+                            ["get", "mag"],
+                            1, 1,
+                            6, 4
+                        ],
+                        16, [
+                            "interpolate",
+                            ["linear"],
+                            ["get", "mag"],
+                            1, 5,
+                            6, 50
+                        ]
+                    ],
+                    "circle-color": [
+                        "interpolate",
+                        ["linear"],
+                        ["get", "mag"],
+                        1, "rgba(33,102,172,0)",
+                        2, "rgb(103,169,207)",
+                        3, "rgb(209,229,240)",
+                        4, "rgb(253,219,199)",
+                        5, "rgb(239,138,98)",
+                        6, "rgb(178,24,43)"
+                    ],
+                    "circle-stroke-color": "white",
+                    "circle-stroke-width": 1,
+                    "circle-opacity": [
+                        "interpolate",
+                        ["linear"],
+                        ["zoom"],
+                        7, 0,
+                        8, 1
+                    ]
+                }
+            });
+
+            // heatmap-rank-4
+            map.addLayer({
+                "id": "heatmap-rank-4",
+                "type": "heatmap",
+                "source": "rank-4",
+                "maxzoom": 15,
+                "layout": {
+                    "visibility": "none"
+                },
+                "paint": {
+                    'heatmap-weight': {
+                        type: 'exponential',
+                        stops: [
+                            [1, 0],
+                            [62, 1]
+                        ]
+                    }, 'heatmap-intensity': {
+                        stops: [
+                            [11, 1],
+                            [15, 3]
+                        ]
+                    },
+                    "heatmap-color": [
+                        "interpolate",
+                        ["linear"],
+                        ["heatmap-density"],
+                        0, "rgba(0, 0, 255, 0)",
+                        0.1, "royalblue",
+                        0.3, "cyan",
+                        0.5, "lime",
+                        0.7, "yellow", 1, "red"
+                    ],
+                    "heatmap-radius": {
+                        stops: [
+                            [11, 15],
+                            [15, 20]
+                        ]
+                    },
+                    "heatmap-opacity": {
+                        default: 1,
+                        stops: [
+                            [14, 1],
+                            [15, 0]
+                        ]
+                    },
+                }
+            });
+            // point-rank-4
+            map.addLayer({
+                "id": "point-rank-4",
+                "type": "circle",
+                "source": "rank-4",
+                "minzoom": 7,
+                "layout": {
+                    "visibility": "none"
+                },
+                "paint": {
+                    "circle-radius": [
+                        "interpolate",
+                        ["linear"],
+                        ["zoom"],
+                        7, [
+                            "interpolate",
+                            ["linear"],
+                            ["get", "mag"],
+                            1, 1,
+                            6, 4
+                        ],
+                        16, [
+                            "interpolate",
+                            ["linear"],
+                            ["get", "mag"],
+                            1, 5,
+                            6, 50
+                        ]
+                    ],
+                    "circle-color": [
+                        "interpolate",
+                        ["linear"],
+                        ["get", "mag"],
+                        1, "rgba(33,102,172,0)",
+                        2, "rgb(103,169,207)",
+                        3, "rgb(209,229,240)",
+                        4, "rgb(253,219,199)",
+                        5, "rgb(239,138,98)",
+                        6, "rgb(178,24,43)"
+                    ],
+                    "circle-stroke-color": "white",
+                    "circle-stroke-width": 1,
+                    "circle-opacity": [
+                        "interpolate",
+                        ["linear"],
+                        ["zoom"],
+                        7, 0,
+                        8, 1
+                    ]
+                }
+            });
+
+            // heatmap-rank-5
+            map.addLayer({
+                "id": "heatmap-rank-5",
+                "type": "heatmap",
+                "source": "rank-5",
+                "maxzoom": 15,
+                "layout": {
+                    "visibility": "none"
+                },
+                "paint": {
+                    'heatmap-weight': {
+                        type: 'exponential',
+                        stops: [
+                            [1, 0],
+                            [62, 1]
+                        ]
+                    }, 'heatmap-intensity': {
+                        stops: [
+                            [11, 1],
+                            [15, 3]
+                        ]
+                    },
+                    "heatmap-color": [
+                        "interpolate",
+                        ["linear"],
+                        ["heatmap-density"],
+                        0, "rgba(0, 0, 255, 0)",
+                        0.1, "royalblue",
+                        0.3, "cyan",
+                        0.5, "lime",
+                        0.7, "yellow", 
+                        1, "red"
+                    ],
+                    "heatmap-radius": {
+                        stops: [
+                            [5, 15],
+                            [15, 20]
+                        ]
+                    },
+                    "heatmap-opacity": {
+                        default: 1,
+                        stops: [
+                            [14, 1],
+                            [15, 0]
+                        ]
+                    },
+                }
+            });
+            // point-rank-5
+            map.addLayer({
+                "id": "point-rank-5",
+                "type": "circle",
+                "source": "rank-5",
+                "minzoom": 10,
+                "layout": {
+                    "visibility": "none"
+                },
+                "paint": {
+                    "circle-radius": [
+                        "interpolate",
+                        ["linear"],
+                        ["zoom"],
+                        7, [
+                            "interpolate",
+                            ["linear"],
+                            ["get", "mag"],
+                            1, 1,
+                            6, 4
+                        ],
+                        16, [
+                            "interpolate",
+                            ["linear"],
+                            ["get", "mag"],
+                            1, 5,
+                            6, 50
+                        ]
+                    ],
+                    "circle-color": [
+                        "interpolate",
+                        ["linear"],
+                        ["get", "mag"],
+                        1, "rgba(33,102,172,0)",
+                        2, "rgb(103,169,207)",
+                        3, "rgb(209,229,240)",
+                        4, "rgb(253,219,199)",
+                        5, "rgb(239,138,98)",
+                        6, "rgb(178,24,43)"
+                    ],
+                    "circle-stroke-color": "white",
+                    "circle-stroke-width": 1,
+                    "circle-opacity": [
+                        "interpolate",
+                        ["linear"],
+                        ["zoom"],
+                        7, 0,
+                        8, 1
+                    ]
+                }
+            });
+        });
+
+        var toggleableLayerIds = [['rank-0', '1M ~ 10M'], ['rank-1', '10M ~ 30M'], ['rank-2', '30M ~ 1H'],
+        ['rank-3', '1H ~ 4H'], ['rank-4', '4H ~ 24H'], ['rank-5', '+ Dia']];
+
+        for (var i = 0; i < toggleableLayerIds.length; i++) {
+            var id = toggleableLayerIds[i];
+
+            console.log(id);
+
+            var link = document.createElement('a');
+            link.href = '#';
+            link.className = '';
+            link.id = id[0];
+            link.textContent = id[1];
+
+            link.onclick = function (e) {
+
+                var clickedLayer = this.id;
+                e.preventDefault();
+                e.stopPropagation();
+
+                var visibility = map.getLayoutProperty('heatmap-' + clickedLayer, 'visibility');
+
+                if (visibility === 'visible') {
+                    map.setLayoutProperty('heatmap-' + clickedLayer, 'visibility', 'none');
+                    map.setLayoutProperty('point-' + clickedLayer, 'visibility', 'none');
+                    this.className = '';
+                } else {
+                    this.className = 'active';
+                    map.setLayoutProperty('heatmap-' + clickedLayer, 'visibility', 'visible');
+                    map.setLayoutProperty('point-' + clickedLayer, 'visibility', 'visible');
+                }
+            };
+
+            var layers = document.getElementById('menu');
+            layers.appendChild(link);
+        }
+
+    </script>
+</body>
+
+</html>
